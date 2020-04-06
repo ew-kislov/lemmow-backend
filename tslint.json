@@ -8,7 +8,8 @@
         "semicolon": true,
         "quotemark": [ true, "single" ],
         "trailing-comma": false,
-        "space-in-brackets": ["error", "always"]
+        "space-in-brackets": ["error", "always"],
+        "no-console": false
     },
     "rulesDirectory": []
 }
