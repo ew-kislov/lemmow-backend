@@ -1,8 +1,25 @@
 TRUNCATE lm_user CASCADE;
+TRUNCATE lm_company CASCADE;
+
+--
 
 INSERT INTO
-    lm_user(first_name, second_name, email, password, registration_date, login_time, logout_time)
+    lm_user(first_name, second_name, email, password)
 VALUES
-    ('first_name_1', 'second_name_1', 'email_1', '123456', current_timestamp, current_timestamp, current_timestamp),
-    ('first_name_2', 'second_name_2', 'email_2', '123456', current_timestamp, current_timestamp, current_timestamp),
-    ('first_name_3', 'second_name_3', 'email_3', '123456', current_timestamp, current_timestamp, current_timestamp);
+    ('Evgeniy', 'Kislov', 'evgeniykislov12@gmail.com', 'root');
+
+--
+
+INSERT INTO
+    lm_company(name, owner_id)
+VALUES
+    ('Lemmow', 1);
+
+--
+
+INSERT INTO
+    lm_user(first_name, second_name, email, password, company_id)
+VALUES
+    ('Rafik', 'Avetisyan', 'rakek@gmail.com', '475yn54h847h', 1),
+    ('Ivan', 'Ivanov', 'ivan@gmail.com', '7hf784h', 1),
+    ('Michael', 'Jackson', 'nigger@gmail.com', 'g58ghj845hg', 1);
