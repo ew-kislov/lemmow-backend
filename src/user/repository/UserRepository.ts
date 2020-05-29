@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseQuery } from './../../core/interface/DatabaseQuery';
 import { DatabaseService } from './../../core/service/DatabaseService';
@@ -27,7 +27,8 @@ export class UserReporitory {
                     lm_user`
         };
 
-        return this.databaseService.executeQuery(query);
+        const users: User[] = await this.databaseService.executeQuery(query);
+        return users.map((user: User) => new User(user));
     }
 
     public async getUser(id: number): Promise<User> {
@@ -51,6 +52,10 @@ export class UserReporitory {
         };
 
         const users: User[] = await this.databaseService.executeQuery(query);
-        return users.length === 1 ? users[0] : null;
+        if (users.length === 1) {
+            return new User(users[0]);
+        } else {
+            throw new NotFoundException();
+        }
     }
 }

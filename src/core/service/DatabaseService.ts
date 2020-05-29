@@ -1,20 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Pool, PoolClient } from 'pg';
 
 import { DatabaseQuery } from '../interface/DatabaseQuery';
 import { LoggerService } from './LoggerService';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DatabaseService {
     private pool: Pool;
 
-    constructor(private readonly loggerService: LoggerService) {
+    constructor(private readonly loggerService: LoggerService, private readonly configService: ConfigService) {
         this.pool = new Pool({
-            host: 'localhost',
-            port: 5432,
-            database: 'lemmow',
-            user: 'lemmow',
-            password: 'lemmow'
+            host: configService.get<string>('PSQL_HOST'),
+            port: configService.get<number>('PSQL_PORT'),
+            database: configService.get<string>('PSQL_DB'),
+            user: configService.get<string>('PSQL_USER'),
+            password: configService.get<string>('PSQL_PASSWORD')
         });
     }
 
@@ -24,7 +25,7 @@ export class DatabaseService {
             client = await this.pool.connect();
         } catch (error) {
             this.loggerService.error('Error while getting new client from poll', error.stack, 'DatabaseService');
-            return [];
+            throw new InternalServerErrorException();
         }
 
         let result: any[];
@@ -33,7 +34,7 @@ export class DatabaseService {
             return result;
         } catch (error) {
             this.loggerService.error('Error while executing query', error.stack, 'DatabaseService');
-            return [];
+            throw new InternalServerErrorException();
         } finally {
             client.release();
         }

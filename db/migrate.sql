@@ -1,4 +1,10 @@
 --
+-- Configure DB
+--
+
+CREATE EXTENSION pgcrypto;
+
+--
 -- company table
 --
 
@@ -37,7 +43,7 @@ CREATE TABLE lm_user (
     first_name VARCHAR(50) NOT NULL,
     second_name VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL,
-    password VARCHAR(50) NOT NULL,
+    password TEXT NOT NULL,
     phone VARCHAR(20),
     company_id INT,
     registration_date TIMESTAMP NOT NULL,
