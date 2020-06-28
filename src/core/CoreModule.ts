@@ -1,8 +1,8 @@
-import { ValidationPipe } from './pipe/ValidationPipe';
 import { Module, Global } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
 import { LoggerService } from './service/LoggerService';
-import { ConfigModule } from '@nestjs/config';
+import { ValidationPipe } from './pipe/ValidationPipe';
 
 @Global()
 @Module({

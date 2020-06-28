@@ -1,11 +1,11 @@
-import { UserFilter } from './../filter/UserFilter';
 import { Controller, Get, Param, ParseIntPipe, UseInterceptors, ClassSerializerInterceptor, Query, Post } from '@nestjs/common';
 
 import { LoggerService } from '../../core/service/LoggerService';
+import { ValidationPipe } from '../../core/pipe/ValidationPipe';
 
-import { UserService } from '../service/UserService';
 import { User } from '../model/User';
-import { ValidationPipe } from 'src/core/pipe/ValidationPipe';
+import { UserService } from '../service/UserService';
+import { UserFilter } from '../filter/UserFilter';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
@@ -14,9 +14,8 @@ export class UserController {
 
     @Get('/')
     public async getUsers(@Query(new ValidationPipe()) filter: UserFilter): Promise<User[]> {
-        console.warn(filter);
         this.loggerService.log('GET /users', 'UserController');
-        return await this.userService.getUsers();
+        return await this.userService.getUsers(filter);
     }
 
     @Get(':id')

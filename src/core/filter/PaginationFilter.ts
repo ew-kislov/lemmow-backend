@@ -1,14 +1,14 @@
-import { IsInt, IsOptional } from 'class-validator';
+import { IsInt, ValidateIf } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class PaginationFilter {
-    @IsOptional()
+    @ValidateIf(obj => obj.limit)
     @IsInt()
     @Transform(value => Number(value))
-    page: number = 1;
+    page: number;
 
-    @IsOptional()
+    @ValidateIf(obj => obj.page)
     @IsInt()
     @Transform(value => Number(value))
-    limit: number = 10;
+    limit: number;
 }
