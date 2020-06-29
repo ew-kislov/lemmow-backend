@@ -1,5 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Exclude } from 'class-transformer';
+
+import { Company } from './../../company/model/Company';
 
 @Entity()
 export class User {
@@ -18,6 +20,9 @@ export class User {
     @Column()
     phone?: string;
 
+    @ManyToOne(type => Company, company => company.members)
+    company?: Company;
+
     @Column()
     registrationDate: Date;
 
@@ -27,8 +32,4 @@ export class User {
     @Exclude()
     @Column()
     password: string;
-
-    constructor(partial: Partial<User>) {
-        Object.assign(this, partial);
-    }
 }

@@ -9,10 +9,18 @@ export class ValidationPipe implements PipeTransform<any> {
             return value;
         }
         const object = plainToClass(metatype, value);
-        const errors = await validate(object);
+        const errors = await validate(object, { skipMissingProperties: true });
         if (errors.length > 0) {
-            throw new BadRequestException('Validation failed');
+            const firstError = Object.values(errors[0].constraints);
+            throw new BadRequestException(`Validation failed: ${firstError}`);
         }
+
+        for (const key in object) {
+            if (!object[key]) {
+                delete object[key];
+            }
+        }
+
         return object;
     }
 
