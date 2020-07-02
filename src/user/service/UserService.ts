@@ -30,7 +30,7 @@ export class UserService {
                 where: whereClause,
                 skip: (filter.page - 1) * filter.limit,
                 take: filter.limit,
-                relations: ['company'],
+                relations: ['company', 'role'],
                 order: {
                     id: 'ASC'
                 }
@@ -46,7 +46,7 @@ export class UserService {
 
     public async getUser(id: number): Promise<User> {
         try {
-            const user = await this.userRepository.findOne(id, { relations: ['company'] });
+            const user = await this.userRepository.findOne(id, { relations: ['company', 'role'] });
 
             this.loggerService.log(`getUser(${id})`, 'UserService');
             return user;
@@ -65,7 +65,7 @@ export class UserService {
 
         try {
             user = await this.userRepository.save(user);
-            user = await this.userRepository.findOne(user.id, { relations: ['company'] });
+            user = await this.userRepository.findOne(user.id, { relations: ['company', 'role'] });
 
             this.loggerService.log('addUser()', 'UserService');
             return user;
@@ -84,7 +84,7 @@ export class UserService {
 
         try {
             await this.userRepository.update(user.id, user);
-            user = await this.userRepository.findOne(user.id, { relations: ['company'] });
+            user = await this.userRepository.findOne(user.id, { relations: ['company', 'role'] });
 
             this.loggerService.log('updateUser()', 'UserService');
             return user;
