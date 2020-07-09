@@ -20,7 +20,7 @@ export class CompanyService {
 
     public async getCompany(id: number): Promise<Company> {
         try {
-            const company = await this.companyRepository.findOne(id);
+            const company = await this.companyRepository.findOne(id, { relations: ['roles'] });
             this.loggerService.log(`getCompany(${id})`, 'CompanyService');
             return company;
         } catch (error) {

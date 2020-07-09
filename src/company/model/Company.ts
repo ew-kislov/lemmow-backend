@@ -1,3 +1,4 @@
+import { Role } from '../../role/model/Role';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 
 import { User } from 'src/user/model/User';
@@ -15,6 +16,9 @@ export class Company {
 
     @OneToMany(type => User, user => user.company)
     members: User[];
+
+    @OneToMany(type => Role, role => role.company)
+    roles: Role[];
 
     constructor(partial: Partial<Company>) {
         Object.assign(this, partial);

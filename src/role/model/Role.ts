@@ -1,6 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable, ManyToOne } from 'typeorm';
 
 import { CompanyPermission } from 'src/permission/model/CompanyPermission';
+
+import { Company } from 'src/company/model/Company';
 
 @Entity()
 export class Role {
@@ -9,6 +11,9 @@ export class Role {
 
     @Column()
     name: string;
+
+    @ManyToOne(type => Company, company => company.roles)
+    company: Company;
 
     @ManyToMany(type => CompanyPermission)
     @JoinTable({

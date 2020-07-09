@@ -13,10 +13,13 @@ import {
 import { LoggerService } from '../../core/service/LoggerService';
 import { ValidationPipe } from '../../core/pipe/ValidationPipe';
 
-import { Company } from 'src/company/model/Company';
-import { CompanyService } from './../service/CompanyService';
+import { Company } from '../model/Company';
+import { CompanyService } from '../service/CompanyService';
 import { CreateCompanyDto } from '../dto/CreateCompanyDto';
 import { UpdateCompanyDto } from '../dto/UpdateCompanyDto';
+
+import { Role } from 'src/role/model/Role';
+import { User } from 'src/user/model/User';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('companies')
@@ -42,5 +45,15 @@ export class CompanyController {
         this.loggerService.log('PUT /companies', 'updateCompany');
 
         return this.companyService.updateCompany(companyDto);
+    }
+
+    @Get(':id/roles')
+    public async getCompanyRoles(@Param('id', ParseIntPipe) id: number): Promise<Role[]> {
+        // TODO
+    }
+
+    @Get(':id/members')
+    public async getCompanyMembers(@Param('id', ParseIntPipe) id: number): Promise<User[]> {
+        // TODO
     }
 }
