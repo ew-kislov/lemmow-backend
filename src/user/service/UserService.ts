@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -11,11 +11,13 @@ import { UpdateUserDto } from './../dto/UpdateUserDto';
 import { UserFilter } from '../filter/UserFilter';
 
 import { Company } from 'src/company/model/Company';
+import { EntityNotFoundByIdException } from 'src/core/exception/EntityNotFoundException';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
+        @InjectRepository(Company) private companyRepository: Repository<Company>,
         private readonly loggerService: LoggerService
     ) { }
 
@@ -72,6 +74,31 @@ export class UserService {
         } catch (error) {
             this.loggerService.error('addUser()', error.detail, 'UserService');
             throw new BadRequestException();
+        }
+    }
+
+    public async getCompanyUsers(companyId: number): Promise<User[]> {
+        let company: Company;
+        try {
+            company = await this.companyRepository.findOne(companyId);
+        } catch (error) {
+            const errorMessage = error.detail || error;
+            this.loggerService.error('getCompanyUsers()', errorMessage, 'UserService');
+            throw new InternalServerErrorException();
+        }
+
+        if (!company) {
+            throw new EntityNotFoundByIdException();
+        }
+
+        try {
+            const users = await this.userRepository.find({ where: { company: { id: companyId } } });
+            this.loggerService.log('getCompanyUsers()', 'UserService');
+            return users;
+        } catch (error) {
+            const messageError = error.detail || error;
+            this.loggerService.error('getCompanyUsers()', messageError, 'UserService');
+            throw new InternalServerErrorException();
         }
     }
 

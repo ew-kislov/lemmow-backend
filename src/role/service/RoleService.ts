@@ -1,24 +1,25 @@
 import { Injectable, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
-import { Repository, In, UpdateResult } from 'typeorm';
-
+import { Repository, In } from 'typeorm';
 import * as lodash from 'lodash';
 
 import { LoggerService } from '../../core/service/LoggerService';
 
 import { Role } from '../model/Role';
-import { CreateRoleDto } from '../dto/CreateRoleDto';
+import { Company } from '../../company/model/Company';
+import { CompanyPermission } from '../../permission/model/CompanyPermission';
 
-import { CompanyPermission } from 'src/permission/model/CompanyPermission';
+import { CreateRoleDto } from '../dto/CreateRoleDto';
 import { UpdateRoleDto } from '../dto/UpdateRoleDto';
-import { EntityNotFoundByIdException } from 'src/core/exception/EntityNotFoundException';
+
+import { EntityNotFoundByIdException } from '../../core/exception/EntityNotFoundException';
 
 @Injectable()
 export class RoleService {
     constructor(
         @InjectRepository(Role) private roleRepository: Repository<Role>,
         @InjectRepository(CompanyPermission) private companyPermissionRepository: Repository<CompanyPermission>,
+        @InjectRepository(Company) private companyRepository: Repository<Company>,
         private readonly loggerService: LoggerService
     ) { }
 
@@ -103,7 +104,6 @@ export class RoleService {
 
         try {
             role = await this.roleRepository.findOne(role.id, { relations: ['companyPermissions'] });
-
             this.loggerService.log('updateRole()', 'RoleService');
             return role;
         } catch (error) {
@@ -113,13 +113,36 @@ export class RoleService {
         }
     }
 
+    public async getCompanyRoles(companyId: number): Promise<Role[]> {
+        let company: Company;
+        try {
+            company = await this.companyRepository.findOne(companyId);
+        } catch (error) {
+            const errorMessage = error.detail || error;
+            this.loggerService.error('getRolesByCompany()', errorMessage, 'RoleService');
+            throw new InternalServerErrorException();
+        }
+
+        if (!company) {
+            throw new EntityNotFoundByIdException();
+        }
+
+        try {
+            const roles = await this.roleRepository.find({ where: { company: { id: companyId } } });
+            this.loggerService.log('getRolesByCompany()', 'RoleService');
+            return roles;
+        } catch (error) {
+            const messageError = error.detail || error;
+            this.loggerService.error('getRolesByCompany()', messageError, 'RoleService');
+            throw new InternalServerErrorException();
+        }
+    }
+
     private async validatePermissionIds(permissionIds: number[]) {
         let permissions: CompanyPermission[];
 
         try {
-            permissions = await this.companyPermissionRepository.find({
-                where: { id: In(permissionIds) }
-            });
+            permissions = await this.companyPermissionRepository.find({ where: { id: In(permissionIds) } });
         } catch (error) {
             this.loggerService.error('validatePermissionIds()', error.detail || error, 'RoleService');
             throw new InternalServerErrorException();

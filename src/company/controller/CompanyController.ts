@@ -1,3 +1,5 @@
+import { UserService } from './../../user/service/UserService';
+import { RoleService } from './../../role/service/RoleService';
 import {
     Controller,
     Get,
@@ -24,7 +26,12 @@ import { User } from 'src/user/model/User';
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('companies')
 export class CompanyController {
-    constructor(private readonly companyService: CompanyService, private readonly loggerService: LoggerService) { }
+    constructor(
+        private readonly companyService: CompanyService,
+        private readonly roleService: RoleService,
+        private readonly userService: UserService,
+        private readonly loggerService: LoggerService
+    ) { }
 
     @Get(':id')
     public async getCompany(@Param('id', ParseIntPipe) id: number): Promise<Company> {
@@ -41,7 +48,7 @@ export class CompanyController {
     }
 
     @Put()
-    public async updateCompany(@Body(new ValidationPipe()) companyDto: UpdateCompanyDto)  {
+    public async updateCompany(@Body(new ValidationPipe()) companyDto: UpdateCompanyDto) {
         this.loggerService.log('PUT /companies', 'updateCompany');
 
         return this.companyService.updateCompany(companyDto);
@@ -49,11 +56,11 @@ export class CompanyController {
 
     @Get(':id/roles')
     public async getCompanyRoles(@Param('id', ParseIntPipe) id: number): Promise<Role[]> {
-        // TODO
+        return this.roleService.getCompanyRoles(id);
     }
 
-    @Get(':id/members')
-    public async getCompanyMembers(@Param('id', ParseIntPipe) id: number): Promise<User[]> {
-        // TODO
+    @Get(':id/users')
+    public async getCompanyUsers(@Param('id', ParseIntPipe) id: number): Promise<User[]> {
+        return this.userService.getCompanyUsers(id);
     }
 }

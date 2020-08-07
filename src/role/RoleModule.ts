@@ -9,10 +9,12 @@ import { RoleController } from './controller/RoleController';
 import { BasicRoleController } from './controller/BasicRoleController';
 
 import { CompanyPermission } from './../permission/model/CompanyPermission';
+import { Company } from 'src/company/model/Company';
 
 @Module({
     controllers: [BasicRoleController, RoleController],
     providers: [BasicRoleService, RoleService],
-    imports: [TypeOrmModule.forFeature([BasicRole, Role, CompanyPermission])]
+    imports: [TypeOrmModule.forFeature([BasicRole, Role, Company, CompanyPermission])],
+    exports: [RoleService]
 })
 export class RoleModule { }
