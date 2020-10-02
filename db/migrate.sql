@@ -29,7 +29,7 @@ CREATE TABLE lm_basic_role (
 INSERT INTO 
     lm_basic_role(name)
 VALUES
-    ('CEO');
+    ('CEO'), ('CTO');
 
 --
 --
@@ -66,11 +66,11 @@ VALUES
     ('Manage company information'),
     ('Manage company roles'),
     ('View company roles'),
-    ('Add employees and manage them'),
-    ('Manage other emplyees'),
+    ('Manage your employees'),
+    ('Manage all employees'),
     ('View employees'),
-    ('Create teams and manage them'),
-    ('Manage other teams'),
+    ('Manage our teams'),
+    ('Manage all teams'),
     ('View teams'),
     ('View company logs');
 
@@ -122,19 +122,20 @@ DROP TABLE IF EXISTS lm_user CASCADE;
 
 CREATE TABLE lm_user (
     id SERIAL,
-    first_name VARCHAR(20) NOT NULL,
-    second_name VARCHAR(20) NOT NULL,
+    name VARCHAR(50) NOT NULL,
     email VARCHAR(30) NOT NULL,
     password TEXT NOT NULL,
     phone VARCHAR(20),
     company_id INTEGER,
     role_id INTEGER,
+    invitor_id INTEGER,
     registration_date TIMESTAMP NOT NULL,
-    login_date TIMESTAMP,
+    last_activity_date TIMESTAMP,
 
     CONSTRAINT lm_user_pkey PRIMARY KEY(id),
     CONSTRAINT lm_user_company_fkey FOREIGN KEY(company_id) REFERENCES lm_company(id),
-    CONSTRAINT lm_user_role_fkey FOREIGN KEY(role_id) REFERENCES lm_role(id)
+    CONSTRAINT lm_user_role_fkey FOREIGN KEY(role_id) REFERENCES lm_role(id),
+    CONSTRAINT lm_user_invitor_fkey FOREIGN KEY(invitor_id) REFERENCES lm_user(id)
 );
 
 --

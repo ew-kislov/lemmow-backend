@@ -9,7 +9,7 @@ import {
     ClassSerializerInterceptor,
     Post,
     Body,
-    Put
+    Put, UseGuards
 } from '@nestjs/common';
 
 import { LoggerService } from '../../core/service/LoggerService';
@@ -22,7 +22,11 @@ import { UpdateCompanyDto } from '../dto/UpdateCompanyDto';
 
 import { Role } from 'src/role/model/Role';
 import { User } from 'src/user/model/User';
+import { AuthUser } from 'src/core/decorator/AuthUser';
+import { JwtPayload } from 'src/auth/interface/JwtPayload';
+import { JwtAuthGuard } from 'src/auth/guard/JwtAuthGuard';
 
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('companies')
 export class CompanyController {
@@ -41,10 +45,10 @@ export class CompanyController {
     }
 
     @Post()
-    public async createCompany(@Body(new ValidationPipe()) companyDto: CreateCompanyDto): Promise<Company> {
+    public async createCompany(@Body(new ValidationPipe()) companyDto: CreateCompanyDto, @AuthUser() jwtPayload: JwtPayload): Promise<Company> {
         this.loggerService.log('POST /companies', 'CompanyController');
 
-        return this.companyService.addCompany(companyDto);
+        return this.companyService.addCompany(companyDto, jwtPayload);
     }
 
     @Put()
@@ -62,5 +66,10 @@ export class CompanyController {
     @Get(':id/users')
     public async getCompanyUsers(@Param('id', ParseIntPipe) id: number): Promise<User[]> {
         return this.userService.getCompanyUsers(id);
+    }
+
+    @Post('invite-user')
+    public async inviteUser() {
+        // TODO
     }
 }

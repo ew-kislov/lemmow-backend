@@ -17,7 +17,7 @@ export class Company {
     @OneToMany(type => User, user => user.company)
     members: User[];
 
-    @OneToMany(type => Role, role => role.company)
+    @OneToMany(type => Role, role => role.company, { cascade: true })
     roles: Role[];
 
     constructor(partial: Partial<Company>) {

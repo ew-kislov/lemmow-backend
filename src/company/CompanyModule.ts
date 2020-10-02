@@ -7,10 +7,12 @@ import { CompanyController } from './controller/CompanyController';
 
 import { UserModule } from './../user/UserModule';
 import { RoleModule } from './../role/RoleModule';
+import { Role } from 'src/role/model/Role';
+import { User } from 'src/user/model/User';
 
 @Module({
     providers: [CompanyService],
     controllers: [CompanyController],
-    imports: [TypeOrmModule.forFeature([Company]), RoleModule, UserModule]
+    imports: [TypeOrmModule.forFeature([Company, Role, User]), RoleModule, UserModule]
 })
 export class CompanyModule { }

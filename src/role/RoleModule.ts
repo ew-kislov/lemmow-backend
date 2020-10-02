@@ -15,6 +15,6 @@ import { Company } from 'src/company/model/Company';
     controllers: [BasicRoleController, RoleController],
     providers: [BasicRoleService, RoleService],
     imports: [TypeOrmModule.forFeature([BasicRole, Role, Company, CompanyPermission])],
-    exports: [RoleService]
+    exports: [BasicRoleService, RoleService]
 })
 export class RoleModule { }

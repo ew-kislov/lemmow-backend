@@ -59,8 +59,6 @@ export class RoleService {
             role = await this.roleRepository.save(role);
             role = await this.roleRepository.findOne(role.id, { relations: ['companyPermissions'] });
 
-            // TODO: add company log
-
             this.loggerService.log('addRole()', 'RoleService');
             return role;
         } catch (error) {
@@ -99,8 +97,6 @@ export class RoleService {
             this.loggerService.error('updateRole()', errorMessage, 'RoleService');
             throw new InternalServerErrorException();
         }
-
-        // TODO: add company log
 
         try {
             role = await this.roleRepository.findOne(role.id, { relations: ['companyPermissions'] });

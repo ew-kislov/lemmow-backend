@@ -10,19 +10,13 @@ export class User {
     id: number;
 
     @Column()
-    firstName: string;
-
-    @Column()
-    secondName: string;
+    name: string;
 
     @Column()
     email: string;
 
     @Column()
     phone?: string;
-
-    @ManyToOne(type => Company, company => company.members)
-    company?: Company;
 
     @ManyToOne(type => Role)
     role?: Role;
@@ -31,11 +25,17 @@ export class User {
     registrationDate: Date;
 
     @Column()
-    loginDate: Date;
+    lastActivityDate: Date;
 
     @Exclude()
     @Column()
     password: string;
+
+    @ManyToOne(type => Company, company => company.members)
+    company?: Company;
+
+    @ManyToOne(type => User)
+    invitor: User;
 
     constructor(partial: Partial<User>) {
         Object.assign(this, partial);

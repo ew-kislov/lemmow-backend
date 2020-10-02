@@ -1,17 +1,18 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 
 import { LoggerService } from '../../core/service/LoggerService';
 
 import { User } from '../model/User';
-import { CreateUserDto } from '../dto/CreateUserDto';
+import { CreateEmployeeDto } from '../dto/CreateEmployeeDto';
 import { UpdateUserDto } from './../dto/UpdateUserDto';
 import { UserFilter } from '../filter/UserFilter';
 
 import { Company } from 'src/company/model/Company';
 import { EntityNotFoundByIdException } from 'src/core/exception/EntityNotFoundException';
+import { CreateOwnerDto } from '../dto/CreateOwnerDto';
 
 @Injectable()
 export class UserService {
@@ -21,11 +22,8 @@ export class UserService {
         private readonly loggerService: LoggerService
     ) { }
 
-    public async getUsers(filter: UserFilter): Promise<User[]> {
-        const whereClause: any = {};
-        if (filter.companyId) {
-            whereClause.company = { id: filter.companyId };
-        }
+    public async getAll(filter: UserFilter): Promise<User[]> {
+        const whereClause = this.filterToWhereClause(filter);
 
         try {
             const users: User[] = await this.userRepository.find({
@@ -46,33 +44,53 @@ export class UserService {
         }
     }
 
-    public async getUser(id: number): Promise<User> {
+    public async get(id: number): Promise<User> {
         try {
-            const user = await this.userRepository.findOne(id, { relations: ['company', 'role'] });
-
+            const user = await this.userRepository.findOne(id, { relations: ['company', 'invitor', 'role', 'role.companyPermissions'] });
             this.loggerService.log(`getUser(${id})`, 'UserService');
             return user;
         } catch (error) {
-            this.loggerService.error(`getUser(${id})`, error.detail, 'UserService');
+            this.loggerService.error(`getUser(${id})`, error.detail || error, 'UserService');
             throw new BadRequestException();
         }
     }
 
-    public async addUser(userDto: CreateUserDto): Promise<User> {
-        let user: User = this.userRepository.create(userDto);
+    public async getUserByEmail(email: string): Promise<User> {
+        try {
+            const user = await this.userRepository.findOne({ email }, { relations: ['company', 'role', 'role.companyPermissions'] });
+            this.loggerService.log(`getUserByEmail(${email})`, 'UserService');
+            return user;
+        } catch (error) {
+            this.loggerService.error(`getUserByEmail(${email})`, error.detail, 'UserService');
+            throw new BadRequestException();
+        }
+    }
+
+    public async addOwner(userDto: CreateOwnerDto): Promise<User> {
+        // TODO
+        return null;
+    }
+
+    public async addToCompany(userDto: CreateEmployeeDto): Promise<User> {
+        const user: User = this.userRepository.create(userDto);
+        user.registrationDate = new Date();
+
+        // TODO: check company existence
 
         if (userDto.companyId) {
             user.company = new Company({ id: userDto.companyId });
+        } else {
+            throw new BadRequestException();
         }
 
         try {
-            user = await this.userRepository.save(user);
-            user = await this.userRepository.findOne(user.id, { relations: ['company', 'role'] });
+            const { id } = await this.userRepository.save(user);
+            const createdUser: User = await this.userRepository.findOne(id, { relations: ['company', 'role'] });
 
-            this.loggerService.log('addUser()', 'UserService');
-            return user;
+            this.loggerService.log('addCompanyUser()', 'UserService');
+            return createdUser;
         } catch (error) {
-            this.loggerService.error('addUser()', error.detail, 'UserService');
+            this.loggerService.error('addCompanyUser()', error.detail, 'UserService');
             throw new BadRequestException();
         }
     }
@@ -98,11 +116,11 @@ export class UserService {
         } catch (error) {
             const messageError = error.detail || error;
             this.loggerService.error('getCompanyUsers()', messageError, 'UserService');
-            throw new InternalServerErrorException();
+            throw new BadRequestException();
         }
     }
 
-    public async updateUser(userDto: UpdateUserDto): Promise<User> {
+    public async update(userDto: UpdateUserDto): Promise<User> {
         let user: User = this.userRepository.create(userDto);
 
         if (userDto.companyId) {
@@ -119,5 +137,26 @@ export class UserService {
             this.loggerService.error('updateUser()', error.detail, 'UserService');
             throw new BadRequestException();
         }
+    }
+
+    public async delete(id: number): Promise<User> {
+        // TODO
+        return null;
+    }
+
+    private filterToWhereClause(filter: UserFilter) {
+        const whereClause: any = {};
+
+        if (filter.companyId) {
+            whereClause.company = { id: filter.companyId };
+        }
+        if (filter.roleId) {
+            whereClause.role = { id: filter.roleId };
+        }
+
+        whereClause.name = Like(filter.name);
+        whereClause.email = Like(filter.email);
+
+        return whereClause;
     }
 }

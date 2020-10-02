@@ -10,8 +10,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, any> {
         return next.handle().pipe(map(data => {
             const response: HttpResponse = {
                 statusCode: context.switchToHttp().getResponse().statusCode,
-                error: null,
-                data
+                data: data || null
             };
 
             return response;

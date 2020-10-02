@@ -1,5 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import _ = require('lodash');
 
 import { EntityNotFoundByIdException } from './../../core/exception/EntityNotFoundException';
 
@@ -10,11 +11,19 @@ import { LoggerService } from '../../core/service/LoggerService';
 import { Company } from 'src/company/model/Company';
 import { CreateCompanyDto } from '../dto/CreateCompanyDto';
 import { UpdateCompanyDto } from '../dto/UpdateCompanyDto';
+import { BasicRoleService } from 'src/role/service/BasicRoleService';
+import { Role } from 'src/role/model/Role';
+import { JwtPayload } from 'src/auth/interface/JwtPayload';
+import { User } from 'src/user/model/User';
+import { BasicRoleType } from 'src/role/model/BasicRoleType';
 
 @Injectable()
 export class CompanyService {
     constructor(
         @InjectRepository(Company) private companyRepository: Repository<Company>,
+        @InjectRepository(Role) private roleRepository: Repository<Role>,
+        @InjectRepository(User) private userRepository: Repository<User>,
+        private readonly basicRoleService: BasicRoleService,
         private readonly loggerService: LoggerService
     ) { }
 
@@ -29,15 +38,26 @@ export class CompanyService {
         }
     }
 
-    public async addCompany(companyDto: CreateCompanyDto): Promise<Company> {
+    public async addCompany(companyDto: CreateCompanyDto, jwtPayload: JwtPayload): Promise<Company> {
+        if (jwtPayload.companyId) {
+            throw new BadRequestException('Your profile already belongs to company');
+        }
+
         let company: Company = this.companyRepository.create(companyDto);
 
         try {
-            company = await this.companyRepository.save(company);
-            company = await this.companyRepository.findOne(company.id);
+            const basicRoles = await this.basicRoleService.getBasicRoles();
+            const basicOwnerRole = _.find(basicRoles, { id: BasicRoleType.CEO });
+            const roles: Role[] = this.roleRepository.create(basicRoles);
+            roles.forEach(role => delete role.id);
+            company.roles = roles;
 
-            // TODO: add CEO role and creator to this role
-            // TODO: add company log
+            company = await this.companyRepository.save(company);
+            company = await this.companyRepository.findOne(company.id, { relations: ['roles'] });
+
+            const ownerRole = _.find(company.roles, { name: basicOwnerRole.name });
+            const user = new User({ id: jwtPayload.id, role: ownerRole });
+            this.userRepository.save(user);
 
             this.loggerService.log('addCompany()', 'CompanyService');
             return company;
@@ -67,8 +87,6 @@ export class CompanyService {
 
         try {
             company = await this.companyRepository.findOne(company.id);
-
-            // TODO: add company log
 
             this.loggerService.log('updateCompany()', 'CompanyService');
             return company;
